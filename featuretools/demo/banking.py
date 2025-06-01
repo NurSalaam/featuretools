@@ -3,6 +3,7 @@ import numpy as np
 import datetime
 from faker import Faker
 import random
+from tqdm.auto import tqdm
 
 # Initialize Faker
 fake = Faker()
@@ -68,6 +69,7 @@ def load_banking_data(n_customers=100, n_cards_per_customer=2, n_transactions_pe
 
     This function uses the Faker library to create realistic-looking data.
     It allows for customization of data size and fraud characteristics.
+    During generation, progress bars are displayed using the `tqdm` library.
 
     Args:
         n_customers (int, optional): Number of unique customers to generate.
@@ -120,6 +122,13 @@ def load_banking_data(n_customers=100, n_cards_per_customer=2, n_transactions_pe
         >>> print(data["customers"].head())
         >>> print(data["cards"].shape)
         >>> print(data["transactions"][["amount", "is_fraud"]].head())
+
+    Note:
+        Progress bars are displayed using the `tqdm` library. If `tqdm` is not
+        installed in your environment, the progress bars may not be visible,
+        or `tqdm` might fall back to a simpler, non-graphical output.
+        `tqdm` is not a direct dependency of Featuretools but is recommended
+        for a better user experience when using this demo function with large datasets.
     """
     customers_data = []
     cards_data = []
@@ -144,7 +153,7 @@ def load_banking_data(n_customers=100, n_cards_per_customer=2, n_transactions_pe
     transaction_id_counter = 0
 
     # Main loop to generate customers and their associated cards and transactions
-    for _ in range(n_customers):
+    for _ in tqdm(range(n_customers), desc="Generating customers & cards"):
         # Generate Customer data
         # Account open date is randomized within the global start and end dates
         account_open_date = fake.date_between_dates(date_start=start_date, date_end=end_date)
@@ -197,7 +206,9 @@ def load_banking_data(n_customers=100, n_cards_per_customer=2, n_transactions_pe
             cards_data.append(card_info)
 
             # Generate Transactions for the current card
-            for _ in range(n_transactions_per_card):
+            # Adding disable=n_transactions_per_card==0 to hide bar if no transactions for this card.
+            # Using leave=False for inner loops to make them disappear after completion.
+            for _ in tqdm(range(n_transactions_per_card), desc=f"  Generating transactions for card {card_id_counter}", leave=False, disable=n_transactions_per_card==0):
                 # Determine valid date range for a transaction:
                 # Must be after card issue_date and global start_date.
                 # Must be before card expiry_date and global end_date.
