@@ -69,6 +69,10 @@ dask = [
     "dask[dataframe] >= 2023.2.0",
     "distributed >= 2023.2.0",
 ]
+spark = [
+    "pyspark >= 3.5.0",
+    "pyarrow >= 14.0.1",
+]
 tsfresh = [
     "featuretools-tsfresh-primitives >= 1.0.0",
 ]
@@ -108,10 +112,10 @@ dev = [
     "ruff >= 0.1.6",
     "black[jupyter] >= 23.1.0",
     "pre-commit >= 2.20.0",
-    "featuretools[docs,dask,test]",
+    "featuretools[docs,dask,spark,test]",
 ]
 complete = [
-    "featuretools[premium,nlp,dask]",
+    "featuretools[premium,nlp,dask,spark]",
 ]
 
 [tool.setuptools]

@@ -167,6 +167,35 @@ def calculate_feature_matrix(
         else:
             raise TypeError("No dataframes or valid EntitySet provided")
 
+    # Native Spark backend dispatch. SparkEntitySet subclasses EntitySet so
+    # the isinstance check above still passes, but its internal dataframes
+    # are pyspark.sql.DataFrame and do NOT expose the woodwork ``.ww``
+    # accessor -- so we must branch here, before the pandas path below
+    # dereferences ``target_dataframe.ww.index``.
+    try:
+        from featuretools.entityset.spark.spark_entityset import SparkEntitySet
+    except ImportError:
+        SparkEntitySet = None  # pyspark not installed -- pandas path only
+    if SparkEntitySet is not None and isinstance(entityset, SparkEntitySet):
+        from featuretools.computational_backends.spark import (
+            calculate_feature_matrix_spark,
+        )
+        return calculate_feature_matrix_spark(
+            features=features,
+            entityset=entityset,
+            cutoff_time=cutoff_time,
+            instance_ids=instance_ids,
+            training_window=training_window,
+            approximate=approximate,
+            save_progress=save_progress,
+            verbose=verbose,
+            chunk_size=chunk_size,
+            n_jobs=n_jobs,
+            dask_kwargs=dask_kwargs,
+            progress_callback=progress_callback,
+            include_cutoff_time=include_cutoff_time,
+        )
+
     target_dataframe = entityset[features[0].dataframe_name]
 
     cutoff_time = _validate_cutoff_time(cutoff_time, target_dataframe)

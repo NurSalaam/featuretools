@@ -45,6 +45,16 @@ def dfs(
     """Calculates a feature matrix and features given a dictionary of dataframes
     and a list of relationships.
 
+    .. note::
+        **Native PySpark backend.** If ``entityset`` is a
+        :class:`SparkEntitySet`, DFS is executed on Spark using real
+        ``groupBy``/``agg``/``join``/window-function operations (with
+        ``pandas_udf`` fallbacks for primitives that lack a Spark-SQL
+        equivalent). The parameters ``n_jobs``, ``chunk_size``, and
+        ``dask_kwargs`` have no effect on the Spark path — Spark manages
+        executor parallelism via the ``SparkSession`` configuration.
+        ``approximate`` and ``save_progress`` are not supported on the
+        Spark backend.
 
     Args:
         dataframes (dict[str -> tuple(DataFrame, str, str, dict[str -> str/Woodwork.LogicalType], dict[str->str/set], boolean)]):
